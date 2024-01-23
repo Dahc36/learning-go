@@ -24,7 +24,7 @@ func main() {
 	// You can use the built-in new function to create a pointer variable
 	var np = new(int)
 	fmt.Println(&np, np, *np)
-	// It returns a 0 value instance of the type
+	// It returns a zero value instance of the type
 	// This is rarely used
 
 	// You can also get a pointer using an & before a struct literal
