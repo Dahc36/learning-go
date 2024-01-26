@@ -37,11 +37,50 @@ func main() {
 	//   - The scheduler can optimize decisions because it's part of the Go process
 	//   - Go programs can spawn thousands of simultaneous goroutines
 
+	// Goroutines communicate using channels
+	// Channels are a reference type and their zero value is nil
+
+	// Channels:
+	// - Unbuffered (default)
+	//   - When written to:
+	//     - Open: the writing goroutine pauses until another one reads from the same channel
+	//     - Closed: PANIC
+	//   - When read from:
+	//     - Open: the reading goroutine pauses until another one writes to the same channel
+	//     - Closed: returns the zero value for the underlying channel type (use the
+	//       comma-ok idiom to differentiate a closed channel read)
+	//   - When closed:
+	//     - Open: closes the channel
+	//     - Closed: PANIC
+	// - Buffered
+	//   - When written to:
+	//     - Open: doesn't pause until the buffer is full
+	//     - Closed: PANIC
+	//   - When read from:
+	//     - Open: only pauses if the buffer is empty
+	//     - Closed: returns the remaining values until empty, then the zero value
+	//   - When closed:
+	//     - Open: closes the channel but the remaining values are still there
+	//     - Closed: PANIC
+	// - nil
+	//   - When written to: Hangs forever
+	//   - When read from: Hangs forever
+	//   - When closed: PANIC
+	// To create a buffered channel do `make(chan int), i` where i is the buffer size
+
+	// The select statement provides a way of solving conflicts when different goroutines
+	// want to continue their operations at the same time.
+	// Each case in a select is a read or a write to a channel, if a read or a write is possible
+	// for any of the cases, it is executed along with the body of the case. If multiple cases
+	// have channels that can be read or written, select chooses randomly one of them.
+
 	ch1 := make(chan int)
 	ch2 := make(chan int)
 	go func() {
 		v := 1
+		// This writes to a channel
 		ch1 <- v
+		// This reads from a channel
 		v2 := <-ch2
 		// This is never reached for some reason?
 		fmt.Println("From the sub-goroutine", v, v2)
@@ -54,6 +93,7 @@ func main() {
 	case v2 = <-ch1:
 	}
 	fmt.Println("From the main goroutine", v, v2)
+	// You can close a channel with close(ch)
 
 	// Keep your APIs concurrency-free, exposing channels or mutexes puts the responsibility
 	// of managing them to the users of you API.
@@ -61,7 +101,77 @@ func main() {
 	// just don't export those values.
 	// The exception is when your API is a library with concurrency helper funcs (like time.After)
 
+	// Every time your goroutine depends on a value that might change, pass the current value
 	a := []int{2, 4, 6, 8, 10}
 	ch := make(chan int, len(a))
-	for _, v :=d// Todo: continue with page 213
+	for _, v := range a {
+		go func(val int) {
+			ch <- val * 2
+		}(v)
+	}
+	for i := 0; i < len(a); i++ {
+		fmt.Println(<-ch)
+	}
+
+	// Always close your goroutines
+	for i := range countTo(10) {
+		fmt.Println(i)
+	}
+
+	// This one won't close the channel
+	for i := range countTo(10) {
+		if i > 5 {
+			break
+		}
+		fmt.Println(i)
+	}
+
+	// The done channel pattern provides a way to stop or cancel processing
+	chCancel, cancel := countToWithCancel(10)
+	for i := range chCancel {
+		if i > 5 {
+			break
+		}
+		fmt.Println(i)
+	}
+	cancel()
+
+	// ToDo: document for-range with channels
+	// ToDo: document for-select
+	// ToDo: implement input listener and return fibonacci
+	// ToDo: implement parallel fetches
+	// ToDo: implement map-reduce with benchmark to compare it to sequential processing
+}
+
+func countTo(max int) <-chan int {
+	ch := make(chan int)
+	go func() {
+		for i := 0; i < max; i++ {
+			ch <- i
+		}
+		fmt.Println("Closing channel")
+		close(ch)
+	}()
+	return ch
+}
+
+func countToWithCancel(max int) (<-chan int, func()) {
+	ch := make(chan int)
+	done := make(chan struct{})
+	cancel := func() {
+		fmt.Println("Closing done")
+		close(done)
+	}
+	go func() {
+		for i := 0; i < max; i++ {
+			select {
+			case <-done:
+				break
+			case ch <- i:
+			}
+		}
+		fmt.Println("Closing ch")
+		close(ch)
+	}()
+	return ch, cancel
 }
