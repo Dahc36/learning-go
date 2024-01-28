@@ -136,6 +136,11 @@ func main() {
 	}
 	cancel()
 
+	// You can turn off a case in a select, which can be useful when one of the channels is closed
+	// You just have to make the channel = nil. Look into page 219 for example.
+
+	// There's a utility type sync.Once, that ensures we only run some code once, see page 222.
+
 	// ToDo: document for-range with channels
 	// ToDo: document for-select
 	// ToDo: implement input listener and return fibonacci
