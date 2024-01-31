@@ -1,0 +1,8 @@
+go 1.21.3
+
+use (
+	./01-setting-up-your-go-environment
+	./09-modules-packages-and-imports
+	./11-the-standard-library
+	./13-writing-tests
+)
