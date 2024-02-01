@@ -9,6 +9,8 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// See 12-the-context for an example of how to organize code
+
 // Store one module per repo
 // Maintaining two modules means tracking separate versions fo two different projects
 
