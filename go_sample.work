@@ -4,5 +4,6 @@ use (
 	./01-setting-up-your-go-environment
 	./09-modules-packages-and-imports
 	./11-the-standard-library
+	./12-the-context
 	./13-writing-tests
 )

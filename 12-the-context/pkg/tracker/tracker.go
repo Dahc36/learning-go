@@ -1,22 +1,39 @@
 package tracker
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"net/http"
 
-// We use a non-exported type for the keys in context.Context because the equality
-// check for ctx.Value(key) checks for the keys' type, so there can be no conflict with
-// a different package adding keys to the context.Context
+	"github.com/dahc36/learning-go/12-the-context/pkg/identity"
+	"github.com/google/uuid"
+)
+
 type key int
 
 const (
 	guidKey key = iota
-	otherKey
 )
 
-// The exported functions should provide access to reading and writing the actual values
-func ContextWithGUID(ctx context.Context, user string) context.Context {
-	return context.WithValue(ctx, guidKey, user)
+func Middleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, guidKey, uuid.New().String())
+		r = r.WithContext(ctx)
+		h.ServeHTTP(w, r)
+	})
 }
-func UerFromContext(ctx context.Context) (string, bool) {
-	user, ok := ctx.Value(guidKey).(string)
-	return user, ok
+
+type Logger struct{}
+
+func (Logger) Log(ctx context.Context, message string) {
+	user, ok := identity.UserFromContext(ctx)
+	if ok {
+		message = fmt.Sprintf("User: %s - %s", user, message)
+	}
+	guid, ok := ctx.Value(guidKey).(string)
+	if ok {
+		message = fmt.Sprintf("GUID: %s - %s", guid, message)
+	}
+	fmt.Println(message)
 }
