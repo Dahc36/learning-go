@@ -8,4 +8,8 @@
 
 ## Testing
 
-1. Run `$ go test ./13-writing-tests/...`
+Run `$ go test ./13-writing-tests/...`
+
+### Coverage
+
+Run `$ ./test_with_coverage.sh`

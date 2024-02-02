@@ -1,0 +1,2 @@
+This can store whatever you need for tests and can be accessed using relative paths
+from your tests
