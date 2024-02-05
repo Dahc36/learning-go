@@ -13,3 +13,7 @@ Run `$ go test ./13-writing-tests/...`
 ### Coverage
 
 Run `$ ./test_with_coverage.sh`
+
+### Benchmarks
+
+Run `$ go test <package> -bench=. -benchmem`
