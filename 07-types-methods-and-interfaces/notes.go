@@ -217,7 +217,7 @@ func main() {
 	fmt.Println(f1(6))
 	// This is called a method expression (it's created from the type itself):
 	f2 := Adder.AddTo
-	fmt.Println(f2(myAdder, 7))
+	fmt.Println(f2(Adder{start: 9}, 7))
 	// The first parameter is the receiver for the method
 
 	fmt.Println("-- Embedding for composition --")
